@@ -98,6 +98,15 @@ static EstimatorFcns estimatorFunctions[] = {
         .name = "OutOfTree",
     },
 #endif
+#ifdef CONFIG_ESTIMATOR_HIL
+    {
+        .init = estimatorHILInit,
+        .deinit = NOT_IMPLEMENTED,
+        .test = estimatorHILTest,
+        .update = estimatorHIL,
+        .name = "HIL",
+    },
+#endif
 };
 
 void stateEstimatorInit(StateEstimatorType estimator) {
