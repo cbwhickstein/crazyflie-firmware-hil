@@ -38,81 +38,162 @@
 #include "stabilizer_types.h"
 #include "static_mem.h"
 
-static Axis3f gyro;
-static Axis3f acc;
-static baro_t baro;
 static tofMeasurement_t tof;
 
 #define ATTITUDE_UPDATE_RATE RATE_250_HZ
-#define ATTITUDE_UPDATE_DT 1.0/ATTITUDE_UPDATE_RATE
+#define ATTITUDE_UPDATE_DT (1.0 / ATTITUDE_UPDATE_RATE)
 
 #define POS_UPDATE_RATE RATE_100_HZ
-#define POS_UPDATE_DT 1.0/POS_UPDATE_RATE
+#define POS_UPDATE_DT (1.0 / POS_UPDATE_RATE)
+
+// TODO: Look into the LOG_ADD Macro what is suposed to be the name and where it saves the value
+// Maybe change them to a struct later for clearer structure
+// Maybe need to sim the baro also?
+static float simPosX = 0.0;
+static float simPosY = 0.0;
+static float simPosZ = 0.0;
+
+//Note: Currently not used
+static float simVelX = 0.0;
+static float simVelY = 0.0;
+static float simVelZ = 0.0;
+
+static float simRotRoll = 0.0;
+static float simRotPitch = 0.0;
+static float simRotYaw = 0.0;
 
 void estimatorHILInit(void)
 {
-  sensfusion6Init(); //kann man auch lassen XD und einfach selber isInit = true setzen
+    sensfusion6Init();
 }
 
 bool estimatorHILTest(void)
 {
-  bool pass = true;
+    bool pass = true;
 
-  pass &= sensfusion6Test();
+    pass &= sensfusion6Test();
 
-  return pass;
+    return pass;
 }
 
 void estimatorHIL(state_t *state, const stabilizerStep_t stabilizerStep)
 {
-  // Pull the latest sensors values of interest; discard the rest
-  //TODO change to own set values
-  measurement_t m;
-  while (estimatorDequeue(&m)) {
-    switch (m.type)
-    {
-    case MeasurementTypeGyroscope:
-      gyro = m.data.gyroscope.gyro;
-      break;
-    case MeasurementTypeAcceleration:
-      acc = m.data.acceleration.acc;
-      break;
-    case MeasurementTypeBarometer:
-      baro = m.data.barometer.baro;
-      break;
-    case MeasurementTypeTOF:
-      tof = m.data.tof;
-      break;
-    default:
-      break;
-    }
-  }
+    // TODO change to own set values (USE THE state variable and update it according to the simulation values)
 
-  // Update filter
-  if (RATE_DO_EXECUTE(ATTITUDE_UPDATE_RATE, stabilizerStep)) {
-    sensfusion6UpdateQ(gyro.x, gyro.y, gyro.z,
+    // Pull the latest sensors values of interest; discard the rest
+    measurement_t m;
+    while (estimatorDequeue(&m))
+    {
+        switch (m.type)
+        {
+        case MeasurementTypeBarometer:
+            baro = m.data.barometer.baro;
+            break;
+
+        case MeasurementTypeTOF:
+            tof = m.data.tof;
+            break;
+
+        default:
+            break;
+        }
+    }
+
+    // Update filter
+    // if (RATE_DO_EXECUTE(ATTITUDE_UPDATE_RATE, stabilizerStep)) {
+    /* sensfusion6UpdateQ(gyro.x, gyro.y, gyro.z,
                         acc.x, acc.y, acc.z,
-                        ATTITUDE_UPDATE_DT);
+                        ATTITUDE_UPDATE_DT); */
 
     // Save attitude, adjusted for the legacy CF2 body coordinate system
-    sensfusion6GetEulerRPY(&state->attitude.roll, &state->attitude.pitch, &state->attitude.yaw);
+    // sensfusion6GetEulerRPY(&state->attitude.roll, &state->attitude.pitch, &state->attitude.yaw);
+    // state->attitude.roll = simRotRoll;
+    // state->attitude.pitch = simRotPitch;
+    // state->attitude.yaw = simRotYaw;
 
     // Save quaternion, hopefully one day this could be used in a better controller.
     // Note that this is not adjusted for the legacy coordinate system
-    sensfusion6GetQuaternion(
+    /* sensfusion6GetQuaternion(
       &state->attitudeQuaternion.x,
       &state->attitudeQuaternion.y,
       &state->attitudeQuaternion.z,
-      &state->attitudeQuaternion.w);
+      &state->attitudeQuaternion.w); */
 
-    state->acc.z = sensfusion6GetAccZWithoutGravity(acc.x,
+    /* state->acc.z = sensfusion6GetAccZWithoutGravity(acc.x,
                                                     acc.y,
-                                                    acc.z);
+                                                    acc.z); */
 
-    positionUpdateVelocity(state->acc.z, ATTITUDE_UPDATE_DT);
-  }
+    // positionUpdateVelocity(state->acc.z, ATTITUDE_UPDATE_DT);
+    //}
 
-  if (RATE_DO_EXECUTE(POS_UPDATE_RATE, stabilizerStep)) {
-    positionEstimate(state, &baro, &tof, POS_UPDATE_DT, stabilizerStep);
-  }
+    if (RATE_DO_EXECUTE(POS_UPDATE_RATE, stabilizerStep)) 
+    {
+        state->attitude.roll = simRotRoll;
+        state->attitude.pitch = simRotPitch;
+        state->attitude.yaw = simRotYaw;
+
+        state->position.x = simPosX;
+        state->position.y = simPosY;
+        state->position.z = simPosZ;
+
+        positionEstimate(state, &baro, &tof, POS_UPDATE_DT, stabilizerStep);
+    }
 }
+
+LOG_GROUP_START(hil)
+
+/**
+ * @brief Simulated position of the global frame: x
+ *
+ */
+LOG_ADD(LOG_FLOAT, simPosX, &simPosX)
+
+/**
+ * @brief Simulated position of the global frame: y
+ *
+ */
+LOG_ADD(LOG_FLOAT, simPosY, &simPosY)
+
+/**
+ * @brief Simulated position of the global frame: z
+ *
+ */
+LOG_ADD(LOG_FLOAT, simPosZ, &simPosZ)
+
+/**
+ * @brief Simulated velocity of the global frame: x
+ *
+ */
+LOG_ADD(LOG_FLOAT, simVelX, &simVelX)
+
+/**
+ * @brief Simulated velocity of the global frame: y
+ *
+ */
+LOG_ADD(LOG_FLOAT, simVelY, &simVelY)
+
+/**
+ * @brief Simulated velocity of the global frame: z
+ *
+ */
+LOG_ADD(LOG_FLOAT, simVelZ, &simVelZ)
+
+/**
+ * @brief Simulated rotation of the local frame: pitch
+ *
+ */
+LOG_ADD(LOG_FLOAT, simRotPitch, &simRotPitch)
+
+/**
+ * @brief Simulated rotation of the local frame: roll
+ *
+ */
+LOG_ADD(LOG_FLOAT, simRotRoll, &simRotRoll)
+
+/**
+ * @brief Simulated rotation of the local frame: yaw
+ *
+ */
+LOG_ADD(LOG_FLOAT, simRotYaw, &simRotYaw)
+
+LOG_GROUP_STOP(hil)

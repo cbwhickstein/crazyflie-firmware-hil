@@ -11,6 +11,7 @@
 #include "estimator_complementary.h"
 #include "estimator_kalman.h"
 #include "estimator_ukf.h"
+#include "estimator_hil.h"
 #include "log.h"
 #include "statsCnt.h"
 #include "eventtrigger.h"
@@ -98,7 +99,7 @@ static EstimatorFcns estimatorFunctions[] = {
         .name = "OutOfTree",
     },
 #endif
-#ifdef CONFIG_ESTIMATOR_HIL
+#ifdef CONFIG_ESTIMATOR_HIL_ENABLE
     {
         .init = estimatorHILInit,
         .deinit = NOT_IMPLEMENTED,

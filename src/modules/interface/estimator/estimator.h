@@ -37,6 +37,9 @@ typedef enum {
 #ifdef CONFIG_ESTIMATOR_UKF_ENABLE
   StateEstimatorTypeUkf,
 #endif
+#ifdef CONFIG_ESTIMATOR_HIL_ENABLE
+  StateEstimatorTypeHIL,
+#endif
 #ifdef CONFIG_ESTIMATOR_OOT
   StateEstimatorTypeOutOfTree,
 #endif
