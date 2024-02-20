@@ -37,6 +37,8 @@
 #include "sensors.h"
 #include "stabilizer_types.h"
 #include "static_mem.h"
+#include "log.h"
+#include "param.h"
 
 static tofMeasurement_t tof;
 
@@ -46,21 +48,24 @@ static tofMeasurement_t tof;
 #define POS_UPDATE_RATE RATE_100_HZ
 #define POS_UPDATE_DT (1.0 / POS_UPDATE_RATE)
 
+static baro_t baro;
+static tofMeasurement_t tof;
+
 // TODO: Look into the LOG_ADD Macro what is suposed to be the name and where it saves the value
 // Maybe change them to a struct later for clearer structure
 // Maybe need to sim the baro also?
-static float simPosX = 0.0;
-static float simPosY = 0.0;
-static float simPosZ = 0.0;
+static volatile float simPosX = 0.0;
+static volatile float simPosY = 0.0;
+static volatile float simPosZ = 0.0;
 
 //Note: Currently not used
-static float simVelX = 0.0;
-static float simVelY = 0.0;
-static float simVelZ = 0.0;
+static volatile float simVelX = 0.0;
+static volatile float simVelY = 0.0;
+static volatile float simVelZ = 0.0;
 
-static float simRotRoll = 0.0;
-static float simRotPitch = 0.0;
-static float simRotYaw = 0.0;
+static volatile float simRotRoll = 0.0;
+static volatile float simRotPitch = 0.0;
+static volatile float simRotYaw = 0.0;
 
 void estimatorHILInit(void)
 {
@@ -140,60 +145,60 @@ void estimatorHIL(state_t *state, const stabilizerStep_t stabilizerStep)
     }
 }
 
-LOG_GROUP_START(hil)
+PARAM_GROUP_START(hil)
 
-/**
- * @brief Simulated position of the global frame: x
- *
- */
-LOG_ADD(LOG_FLOAT, simPosX, &simPosX)
+    /**
+     * @brief Simulated position of the global frame: x
+     *
+     */
+    PARAM_ADD_CORE(PARAM_FLOAT, simPosX, &simPosX)
 
-/**
- * @brief Simulated position of the global frame: y
- *
- */
-LOG_ADD(LOG_FLOAT, simPosY, &simPosY)
+    /**
+     * @brief Simulated position of the global frame: y
+     *
+     */
+    PARAM_ADD_CORE(PARAM_FLOAT, simPosY, &simPosY)
 
-/**
- * @brief Simulated position of the global frame: z
- *
- */
-LOG_ADD(LOG_FLOAT, simPosZ, &simPosZ)
+    /**
+     * @brief Simulated position of the global frame: z
+     *
+     */
+    PARAM_ADD_CORE(PARAM_FLOAT, simPosZ, &simPosZ)
 
-/**
- * @brief Simulated velocity of the global frame: x
- *
- */
-LOG_ADD(LOG_FLOAT, simVelX, &simVelX)
+    /**
+     * @brief Simulated velocity of the global frame: x
+     *
+     */
+    PARAM_ADD_CORE(PARAM_FLOAT, simVelX, &simVelX)
 
-/**
- * @brief Simulated velocity of the global frame: y
- *
- */
-LOG_ADD(LOG_FLOAT, simVelY, &simVelY)
+    /**
+     * @brief Simulated velocity of the global frame: y
+     *
+     */
+    PARAM_ADD_CORE(PARAM_FLOAT, simVelY, &simVelY)
 
-/**
- * @brief Simulated velocity of the global frame: z
- *
- */
-LOG_ADD(LOG_FLOAT, simVelZ, &simVelZ)
+    /**
+     * @brief Simulated velocity of the global frame: z
+     *
+     */
+    PARAM_ADD_CORE(PARAM_FLOAT, simVelZ, &simVelZ)
 
-/**
- * @brief Simulated rotation of the local frame: pitch
- *
- */
-LOG_ADD(LOG_FLOAT, simRotPitch, &simRotPitch)
+    /**
+     * @brief Simulated rotation of the local frame: pitch
+     *
+     */
+    PARAM_ADD_CORE(PARAM_FLOAT, simRotPitch, &simRotPitch)
 
-/**
- * @brief Simulated rotation of the local frame: roll
- *
- */
-LOG_ADD(LOG_FLOAT, simRotRoll, &simRotRoll)
+    /**
+     * @brief Simulated rotation of the local frame: roll
+     *
+     */
+    PARAM_ADD_CORE(PARAM_FLOAT, simRotRoll, &simRotRoll)
 
-/**
- * @brief Simulated rotation of the local frame: yaw
- *
- */
-LOG_ADD(LOG_FLOAT, simRotYaw, &simRotYaw)
+    /**
+     * @brief Simulated rotation of the local frame: yaw
+     *
+     */
+    PARAM_ADD_CORE(PARAM_FLOAT, simRotYaw, &simRotYaw)
 
-LOG_GROUP_STOP(hil)
+PARAM_GROUP_STOP(hil)
