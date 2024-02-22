@@ -40,7 +40,7 @@
 #include "log.h"
 #include "param.h"
 
-static tofMeasurement_t tof;
+#include "debug.h"
 
 #define ATTITUDE_UPDATE_RATE RATE_250_HZ
 #define ATTITUDE_UPDATE_DT (1.0 / ATTITUDE_UPDATE_RATE)
@@ -48,6 +48,7 @@ static tofMeasurement_t tof;
 #define POS_UPDATE_RATE RATE_100_HZ
 #define POS_UPDATE_DT (1.0 / POS_UPDATE_RATE)
 
+static Axis3f acc;
 static baro_t baro;
 static tofMeasurement_t tof;
 
@@ -84,58 +85,59 @@ bool estimatorHILTest(void)
 void estimatorHIL(state_t *state, const stabilizerStep_t stabilizerStep)
 {
     // TODO change to own set values (USE THE state variable and update it according to the simulation values)
-
+    DEBUG_PRINT("Hello From Hil\n");
     // Pull the latest sensors values of interest; discard the rest
     measurement_t m;
     while (estimatorDequeue(&m))
     {
         switch (m.type)
         {
-        case MeasurementTypeBarometer:
-            baro = m.data.barometer.baro;
-            break;
-
-        case MeasurementTypeTOF:
-            tof = m.data.tof;
-            break;
-
-        default:
-            break;
+            case MeasurementTypeAcceleration:
+                acc = m.data.acceleration.acc;
+                break;
+            case MeasurementTypeBarometer:
+                baro = m.data.barometer.baro;
+                break;
+            case MeasurementTypeTOF:
+                tof = m.data.tof;
+                break;
+            default:
+                break;
         }
     }
 
     // Update filter
-    // if (RATE_DO_EXECUTE(ATTITUDE_UPDATE_RATE, stabilizerStep)) {
-    /* sensfusion6UpdateQ(gyro.x, gyro.y, gyro.z,
-                        acc.x, acc.y, acc.z,
-                        ATTITUDE_UPDATE_DT); */
+    if (RATE_DO_EXECUTE(ATTITUDE_UPDATE_RATE, stabilizerStep)) {
+        sensfusion6UpdateQ(simRotRoll, simRotPitch, simRotYaw,
+                            acc.x, acc.y, acc.z,
+                            ATTITUDE_UPDATE_DT);
 
-    // Save attitude, adjusted for the legacy CF2 body coordinate system
-    // sensfusion6GetEulerRPY(&state->attitude.roll, &state->attitude.pitch, &state->attitude.yaw);
-    // state->attitude.roll = simRotRoll;
-    // state->attitude.pitch = simRotPitch;
-    // state->attitude.yaw = simRotYaw;
+        // Save attitude, adjusted for the legacy CF2 body coordinate system
+        sensfusion6GetEulerRPY(&state->attitude.roll, &state->attitude.pitch, &state->attitude.yaw);
+        /* state->attitude.roll = simRotRoll;
+        state->attitude.pitch = simRotPitch;
+        state->attitude.yaw = simRotYaw; */
 
-    // Save quaternion, hopefully one day this could be used in a better controller.
-    // Note that this is not adjusted for the legacy coordinate system
-    /* sensfusion6GetQuaternion(
-      &state->attitudeQuaternion.x,
-      &state->attitudeQuaternion.y,
-      &state->attitudeQuaternion.z,
-      &state->attitudeQuaternion.w); */
+        // Save quaternion, hopefully one day this could be used in a better controller.
+        // Note that this is not adjusted for the legacy coordinate system
+        sensfusion6GetQuaternion(
+            &state->attitudeQuaternion.x,
+            &state->attitudeQuaternion.y,
+            &state->attitudeQuaternion.z,
+            &state->attitudeQuaternion.w);
 
-    /* state->acc.z = sensfusion6GetAccZWithoutGravity(acc.x,
-                                                    acc.y,
-                                                    acc.z); */
+        state->acc.z = sensfusion6GetAccZWithoutGravity(acc.x,
+                                                        acc.y,
+                                                        acc.z);
 
-    // positionUpdateVelocity(state->acc.z, ATTITUDE_UPDATE_DT);
-    //}
+        positionUpdateVelocity(state->acc.z, ATTITUDE_UPDATE_DT);
+    }
 
     if (RATE_DO_EXECUTE(POS_UPDATE_RATE, stabilizerStep)) 
     {
-        state->attitude.roll = simRotRoll;
+        /* state->attitude.roll = simRotRoll;
         state->attitude.pitch = simRotPitch;
-        state->attitude.yaw = simRotYaw;
+        state->attitude.yaw = simRotYaw; */
 
         state->position.x = simPosX;
         state->position.y = simPosY;

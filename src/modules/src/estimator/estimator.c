@@ -132,6 +132,8 @@ void stateEstimatorSwitchTo(StateEstimatorType estimator) {
     #define ESTIMATOR StateEstimatorTypeUkf
   #elif defined(CONFIG_ESTIMATOR_COMPLEMENTARY)
     #define ESTIMATOR StateEstimatorTypeComplementary
+  #elif defined(CONFIG_ESTIMATOR_HIL)
+    #define ESTIMATOR StateEstimatorTypeHIL
   #else
     #define ESTIMATOR StateEstimatorTypeAutoSelect
   #endif
