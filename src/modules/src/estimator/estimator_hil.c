@@ -68,6 +68,8 @@ static volatile float simRotRoll = 0.0;
 static volatile float simRotPitch = 0.0;
 static volatile float simRotYaw = 0.0;
 
+static volatile float testparam = 0.0;
+
 void estimatorHILInit(void)
 {
     sensfusion6Init();
@@ -86,6 +88,9 @@ void estimatorHIL(state_t *state, const stabilizerStep_t stabilizerStep)
 {
     // TODO change to own set values (USE THE state variable and update it according to the simulation values)
     DEBUG_PRINT("Hello From Hil\n");
+    testparam = testparam + 1.0f;
+    if (testparam > 1000.0f)
+        testparam = 0.0;
     // Pull the latest sensors values of interest; discard the rest
     measurement_t m;
     while (estimatorDequeue(&m))
@@ -124,7 +129,8 @@ void estimatorHIL(state_t *state, const stabilizerStep_t stabilizerStep)
             &state->attitudeQuaternion.x,
             &state->attitudeQuaternion.y,
             &state->attitudeQuaternion.z,
-            &state->attitudeQuaternion.w);
+            &state->attitudeQuaternion.w
+        );
 
         state->acc.z = sensfusion6GetAccZWithoutGravity(acc.x,
                                                         acc.y,
@@ -143,7 +149,7 @@ void estimatorHIL(state_t *state, const stabilizerStep_t stabilizerStep)
         state->position.y = simPosY;
         state->position.z = simPosZ;
 
-        positionEstimate(state, &baro, &tof, POS_UPDATE_DT, stabilizerStep);
+        //positionEstimate(state, &baro, &tof, POS_UPDATE_DT, stabilizerStep);
     }
 }
 
@@ -203,4 +209,15 @@ PARAM_GROUP_START(hil)
      */
     PARAM_ADD_CORE(PARAM_FLOAT, simRotYaw, &simRotYaw)
 
+
 PARAM_GROUP_STOP(hil)
+
+LOG_GROUP_START(hil)
+
+    /**
+     * @brief test parameter to see if the right estimator is used
+     * 
+     */
+    LOG_ADD(LOG_FLOAT, testparam, &testparam)
+
+LOG_GROUP_STOP(hil)

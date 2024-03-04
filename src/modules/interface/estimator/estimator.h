@@ -29,7 +29,7 @@
 #include "stabilizer_types.h"
 
 #define CONFIG_ESTIMATOR_HIL_ENABLE //Quick and hacky define for now. maybe later it will change
-//#define CONFIG_ESTIMATOR_HIL
+#define CONFIG_ESTIMATOR_HIL
 
 typedef enum {
   StateEstimatorTypeAutoSelect = 0,
