@@ -113,30 +113,30 @@ void estimatorHIL(state_t *state, const stabilizerStep_t stabilizerStep)
 
     // Update filter
     if (RATE_DO_EXECUTE(ATTITUDE_UPDATE_RATE, stabilizerStep)) {
-        sensfusion6UpdateQ(simRotRoll, simRotPitch, simRotYaw,
+       /*  sensfusion6UpdateQ(simRotRoll, simRotPitch, simRotYaw,
                             acc.x, acc.y, acc.z,
-                            ATTITUDE_UPDATE_DT);
+                            ATTITUDE_UPDATE_DT); */
 
         // Save attitude, adjusted for the legacy CF2 body coordinate system
-        sensfusion6GetEulerRPY(&state->attitude.roll, &state->attitude.pitch, &state->attitude.yaw);
-        /* state->attitude.roll = simRotRoll;
+        //sensfusion6GetEulerRPY(&state->attitude.roll, &state->attitude.pitch, &state->attitude.yaw);
+        state->attitude.roll = simRotRoll;
         state->attitude.pitch = simRotPitch;
-        state->attitude.yaw = simRotYaw; */
+        state->attitude.yaw = simRotYaw;
 
         // Save quaternion, hopefully one day this could be used in a better controller.
         // Note that this is not adjusted for the legacy coordinate system
-        sensfusion6GetQuaternion(
+        /* sensfusion6GetQuaternion(
             &state->attitudeQuaternion.x,
             &state->attitudeQuaternion.y,
             &state->attitudeQuaternion.z,
             &state->attitudeQuaternion.w
-        );
+        ); */
 
-        state->acc.z = sensfusion6GetAccZWithoutGravity(acc.x,
+        /* state->acc.z = sensfusion6GetAccZWithoutGravity(acc.x,
                                                         acc.y,
                                                         acc.z);
 
-        positionUpdateVelocity(state->acc.z, ATTITUDE_UPDATE_DT);
+        positionUpdateVelocity(state->acc.z, ATTITUDE_UPDATE_DT); */
     }
 
     if (RATE_DO_EXECUTE(POS_UPDATE_RATE, stabilizerStep)) 
