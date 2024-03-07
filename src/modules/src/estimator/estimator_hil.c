@@ -59,11 +59,6 @@ static volatile float simPosX = 0.0;
 static volatile float simPosY = 0.0;
 static volatile float simPosZ = 0.0;
 
-//Note: Currently not used
-static volatile float simVelX = 0.0;
-static volatile float simVelY = 0.0;
-static volatile float simVelZ = 0.0;
-
 static volatile float simRotRoll = 0.0;
 static volatile float simRotPitch = 0.0;
 static volatile float simRotYaw = 0.0;
@@ -113,43 +108,16 @@ void estimatorHIL(state_t *state, const stabilizerStep_t stabilizerStep)
 
     // Update filter
     if (RATE_DO_EXECUTE(ATTITUDE_UPDATE_RATE, stabilizerStep)) {
-       /*  sensfusion6UpdateQ(simRotRoll, simRotPitch, simRotYaw,
-                            acc.x, acc.y, acc.z,
-                            ATTITUDE_UPDATE_DT); */
-
-        // Save attitude, adjusted for the legacy CF2 body coordinate system
-        //sensfusion6GetEulerRPY(&state->attitude.roll, &state->attitude.pitch, &state->attitude.yaw);
         state->attitude.roll = simRotRoll;
         state->attitude.pitch = simRotPitch;
         state->attitude.yaw = simRotYaw;
-
-        // Save quaternion, hopefully one day this could be used in a better controller.
-        // Note that this is not adjusted for the legacy coordinate system
-        /* sensfusion6GetQuaternion(
-            &state->attitudeQuaternion.x,
-            &state->attitudeQuaternion.y,
-            &state->attitudeQuaternion.z,
-            &state->attitudeQuaternion.w
-        ); */
-
-        /* state->acc.z = sensfusion6GetAccZWithoutGravity(acc.x,
-                                                        acc.y,
-                                                        acc.z);
-
-        positionUpdateVelocity(state->acc.z, ATTITUDE_UPDATE_DT); */
     }
 
     if (RATE_DO_EXECUTE(POS_UPDATE_RATE, stabilizerStep)) 
     {
-        /* state->attitude.roll = simRotRoll;
-        state->attitude.pitch = simRotPitch;
-        state->attitude.yaw = simRotYaw; */
-
         state->position.x = simPosX;
         state->position.y = simPosY;
         state->position.z = simPosZ;
-
-        //positionEstimate(state, &baro, &tof, POS_UPDATE_DT, stabilizerStep);
     }
 }
 
@@ -172,24 +140,6 @@ PARAM_GROUP_START(hil)
      *
      */
     PARAM_ADD_CORE(PARAM_FLOAT, simPosZ, &simPosZ)
-
-    /**
-     * @brief Simulated velocity of the global frame: x
-     *
-     */
-    PARAM_ADD_CORE(PARAM_FLOAT, simVelX, &simVelX)
-
-    /**
-     * @brief Simulated velocity of the global frame: y
-     *
-     */
-    PARAM_ADD_CORE(PARAM_FLOAT, simVelY, &simVelY)
-
-    /**
-     * @brief Simulated velocity of the global frame: z
-     *
-     */
-    PARAM_ADD_CORE(PARAM_FLOAT, simVelZ, &simVelZ)
 
     /**
      * @brief Simulated rotation of the local frame: pitch
