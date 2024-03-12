@@ -294,6 +294,11 @@ static void stabilizerTask(void* param)
       updateStateEstimatorAndControllerTypes();
 
       stateEstimator(&state, stabilizerStep);
+      
+      // change sensors.gyro with omega from state
+      sensorData.gyro.x = state.omega.x
+      sensorData.gyro.y = state.omega.y
+      sensorData.gyro.z = state.omega.z
 
       const bool areMotorsAllowedToRun = supervisorAreMotorsAllowedToRun();
 

@@ -179,6 +179,7 @@ typedef struct state_s {
   point_t position;         // m
   velocity_t velocity;      // m/s
   acc_t acc;                // Gs (but acc.z without considering gravity)
+  Axis3f omega;             // angular velocity
 } state_t;
 
 #define STABILIZER_NR_OF_MOTORS 4

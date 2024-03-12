@@ -48,13 +48,8 @@
 #define POS_UPDATE_RATE RATE_100_HZ
 #define POS_UPDATE_DT (1.0 / POS_UPDATE_RATE)
 
-static Axis3f acc;
-static baro_t baro;
-static tofMeasurement_t tof;
 
-// TODO: Look into the LOG_ADD Macro what is suposed to be the name and where it saves the value
 // Maybe change them to a struct later for clearer structure
-// Maybe need to sim the baro also?
 static volatile float simPosX = 0.0;
 static volatile float simPosY = 0.0;
 static volatile float simPosZ = 0.0;
@@ -62,6 +57,14 @@ static volatile float simPosZ = 0.0;
 static volatile float simRotRoll = 0.0;
 static volatile float simRotPitch = 0.0;
 static volatile float simRotYaw = 0.0;
+
+static volatile float simOmegaX = 0.0;
+static volatile float simOmegaY = 0.0;
+static volatile float simOmegaZ = 0.0;
+
+static volatile float simVelocityZ = 0.0;
+
+static volatile float simAccZ = 0.0;
 
 static volatile float testparam = 0.0;
 
@@ -90,27 +93,26 @@ void estimatorHIL(state_t *state, const stabilizerStep_t stabilizerStep)
     measurement_t m;
     while (estimatorDequeue(&m))
     {
-        switch (m.type)
-        {
-            case MeasurementTypeAcceleration:
-                acc = m.data.acceleration.acc;
-                break;
-            case MeasurementTypeBarometer:
-                baro = m.data.barometer.baro;
-                break;
-            case MeasurementTypeTOF:
-                tof = m.data.tof;
-                break;
-            default:
-                break;
-        }
+        
     }
 
     // Update filter
     if (RATE_DO_EXECUTE(ATTITUDE_UPDATE_RATE, stabilizerStep)) {
+        // Euler angles 
         state->attitude.roll = simRotRoll;
         state->attitude.pitch = simRotPitch;
         state->attitude.yaw = simRotYaw;
+        
+        // angular velocity
+        state->omega.x = simOmegaX;
+        state->omega.y = simOmegaY;
+        state->omega.z = simOmegaZ;
+
+        // z velocity
+        state->velocity.z = simVelocityZ;
+
+        // z accelleration
+        state->acc.z = simAccZ;
     }
 
     if (RATE_DO_EXECUTE(POS_UPDATE_RATE, stabilizerStep)) 
@@ -159,6 +161,35 @@ PARAM_GROUP_START(hil)
      */
     PARAM_ADD_CORE(PARAM_FLOAT, simRotYaw, &simRotYaw)
 
+    /**
+     * @brief Simulated angular velocity for x axis
+     * 
+     */
+    PARAM_ADD_CORE(PARAM_FLOAT, simOmegaX, &simOmegaX)
+
+    /**
+     * @brief Simulated angular velocity for y axis
+     * 
+     */
+    PARAM_ADD_CORE(PARAM_FLOAT, simOmegaY, &simOmegaY)
+
+    /**
+     * @brief Simulated angular velocity for z axis
+     * 
+     */
+    PARAM_ADD_CORE(PARAM_FLOAT, simOmegaZ, &simOmegaZ)
+
+    /**
+     * @brief Simulated Z velocity 
+     * 
+     */
+    PARAM_ADD_CORE(PARAM_FLOAT, simVelocityZ, &simVelocityZ)
+
+    /**
+     * @brief Simulated Z accelleration 
+     * 
+     */
+    PARAM_ADD_CORE(PARAM_FLOAT, simAccZ, &simAccZ) 
 
 PARAM_GROUP_STOP(hil)
 
