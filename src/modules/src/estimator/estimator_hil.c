@@ -62,6 +62,8 @@ static volatile float simOmegaX = 0.0;
 static volatile float simOmegaY = 0.0;
 static volatile float simOmegaZ = 0.0;
 
+static volatile float simVelocityX = 0.0;
+static volatile float simVelocityY = 0.0;
 static volatile float simVelocityZ = 0.0;
 
 static volatile float simAccZ = 0.0;
@@ -109,7 +111,10 @@ void estimatorHIL(state_t *state, const stabilizerStep_t stabilizerStep)
         state->omega.z = simOmegaZ;
 
         // z velocity
+        state->velocity.x = simVelocityX;
+        state->velocity.y = simVelocityY;
         state->velocity.z = simVelocityZ;
+
 
         // z accelleration
         state->acc.z = simAccZ;
@@ -183,8 +188,12 @@ PARAM_GROUP_START(hil)
      * @brief Simulated Z velocity 
      * 
      */
-    PARAM_ADD_CORE(PARAM_FLOAT, simVelocityZ, &simVelocityZ)
+    PARAM_ADD_CORE(PARAM_FLOAT, simVelocityX, &simVelocityX)
 
+
+    PARAM_ADD_CORE(PARAM_FLOAT, simVelocityY, &simVelocityY)
+
+    PARAM_ADD_CORE(PARAM_FLOAT, simVelocityZ, &simVelocityZ)
     /**
      * @brief Simulated Z accelleration 
      * 
