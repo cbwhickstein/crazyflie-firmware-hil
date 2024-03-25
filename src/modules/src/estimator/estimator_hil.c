@@ -68,6 +68,11 @@ static volatile float simVelocityZ = 0.0;
 
 static volatile float simAccZ = 0.0;
 
+static volatile float quatW = 0.0;
+static volatile float quatX = 0.0;
+static volatile float quatY = 0.0;
+static volatile float quatZ = 0.0;
+
 static volatile float testparam = 0.0;
 
 void estimatorHILInit(void)
@@ -115,6 +120,11 @@ void estimatorHIL(state_t *state, const stabilizerStep_t stabilizerStep)
         state->velocity.y = simVelocityY;
         state->velocity.z = simVelocityZ;
 
+        state->attitudeQuaternion.w = quatW;
+        state->attitudeQuaternion.x = quatX;
+        state->attitudeQuaternion.y = quatY;
+        state->attitudeQuaternion.z = quatZ;
+        
 
         // z accelleration
         state->acc.z = simAccZ;
@@ -199,6 +209,14 @@ PARAM_GROUP_START(hil)
      * 
      */
     PARAM_ADD_CORE(PARAM_FLOAT, simAccZ, &simAccZ) 
+
+    PARAM_ADD_CORE(PARAM_FLOAT, quatW, &quatW) 
+
+    PARAM_ADD_CORE(PARAM_FLOAT, quatX, &quatX) 
+
+    PARAM_ADD_CORE(PARAM_FLOAT, quatY, &quatY) 
+
+    PARAM_ADD_CORE(PARAM_FLOAT, quatZ, &quatZ) 
 
 PARAM_GROUP_STOP(hil)
 
